@@ -22,7 +22,10 @@ final class Scheduler
     {
         $file = self::file();
         $next = is_file($file) ? trim((string) @file_get_contents($file)) : '';
-        if ($next === 'none' || ($next !== '' && ctype_digit($next) && (int) $next > time())) {
+        // Re-check the database every 15 minutes even when nothing is due, so posts added
+        // outside the admin (SQL imports, seed data) are still picked up.
+        $fresh = is_file($file) && (int) @filemtime($file) > time() - 900;
+        if ($fresh && ($next === 'none' || ($next !== '' && ctype_digit($next) && (int) $next > time()))) {
             return 0;
         }
         $now = gmdate('Y-m-d H:i:s');
