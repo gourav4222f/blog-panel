@@ -1,0 +1,23 @@
+/node_modules/
+/dist/
+/tests/e2e/screenshots/
+/tests/fixtures/out/
+# Site-specific runtime data (never commit)
+/blogs/config/config.php
+/blogs/storage/installed.lock
+/blogs/storage/install.lock.tmp
+/blogs/storage/cache/*
+!/blogs/storage/cache/.gitkeep
+/blogs/storage/logs/*
+!/blogs/storage/logs/.gitkeep
+/blogs/storage/sessions/*
+!/blogs/storage/sessions/.gitkeep
+/blogs/storage/backups/*
+!/blogs/storage/backups/.gitkeep
+/blogs/storage/originals/*
+!/blogs/storage/originals/.gitkeep
+/blogs/storage/tmp/*
+!/blogs/storage/tmp/.gitkeep
+/blogs/uploads/*
+!/blogs/uploads/.htaccess
+!/blogs/uploads/.gitkeep

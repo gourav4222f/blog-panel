@@ -1,0 +1,40 @@
+# BlogFlow CMS uploads: images only, never executable code.
+Options -Indexes -ExecCGI -Includes
+
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_mime.c>
+    RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8 .phar .pht .pl .py .cgi .shtml .asp .aspx .jsp
+    RemoveType .php .phtml .php3 .php4 .php5 .php7 .php8 .phar .pht
+</IfModule>
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Stop the parent front-controller rewrite from catching missing images.
+    RewriteRule ^ - [L]
+</IfModule>
+
+# Deny everything except image files.
+<IfModule mod_authz_core.c>
+    Require all denied
+    <FilesMatch "(?i)\.(jpe?g|png|webp|avif|gif)$">
+        Require all granted
+    </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+    <FilesMatch "(?i)\.(jpe?g|png|webp|avif|gif)$">
+        Order deny,allow
+        Allow from all
+    </FilesMatch>
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set Content-Security-Policy "default-src 'none'; img-src 'self'; style-src 'none'; script-src 'none'"
+    Header set Cache-Control "public, max-age=31536000, immutable"
+</IfModule>

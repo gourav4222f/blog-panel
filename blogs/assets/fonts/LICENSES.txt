@@ -1,0 +1,10 @@
+Self-hosted fonts bundled with BlogFlow CMS (via Fontsource). All fonts are licensed under the SIL Open Font License 1.1.
+
+- inter: OFL-1.1 — https://fontsource.org/fonts/inter
+- dm-sans: OFL-1.1 — https://fontsource.org/fonts/dm-sans
+- manrope: OFL-1.1 — https://fontsource.org/fonts/manrope
+- source-serif-4: OFL-1.1 — https://fontsource.org/fonts/source-serif-4
+- lora: OFL-1.1 — https://fontsource.org/fonts/lora
+- merriweather: OFL-1.1 — https://fontsource.org/fonts/merriweather
+- fraunces: OFL-1.1 — https://fontsource.org/fonts/fraunces
+- playfair-display: OFL-1.1 — https://fontsource.org/fonts/playfair-display

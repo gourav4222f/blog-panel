@@ -1,0 +1,109 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * BlogFlow CMS command-line tools (optional; for hosts with SSH access).
+ *
+ *   php bin/blogflow migrate                     Apply pending database migrations
+ *   php bin/blogflow reset-password <email>      Set a new password for a user (prompts)
+ *   php bin/blogflow set-url <https://example.com/blogs>   Change the canonical blog URL
+ *   php bin/blogflow disable-host-redirect       Turn off the canonical host/HTTPS redirect
+ *   php bin/blogflow clear-cache                 Remove cached settings and pages
+ *   php bin/blogflow publish-scheduled           Publish posts whose time has come
+ *   php bin/blogflow audit                       Run the SEO audit
+ */
+
+declare(strict_types=1);
+
+if (PHP_SAPI !== 'cli') {
+    http_response_code(404);
+    exit;
+}
+require dirname(__DIR__) . '/app/bootstrap.php';
+
+use BlogFlow\Core\App;
+use BlogFlow\Core\Auth;
+use BlogFlow\Core\Cache;
+use BlogFlow\Core\Config;
+use BlogFlow\Core\Database;
+use BlogFlow\Core\Migrator;
+use BlogFlow\Core\Request;
+use BlogFlow\Core\Session;
+use BlogFlow\Core\Url;
+use BlogFlow\Core\View;
+use BlogFlow\Services\PageCache;
+use BlogFlow\Services\Scheduler;
+use BlogFlow\Services\SeoAuditService;
+use BlogFlow\Services\Settings;
+use BlogFlow\Validation\Validator;
+
+$config = Config::load() ?? exit("BlogFlow is not installed (no configuration found).\n");
+$db = new Database($config['db']);
+$cache = new Cache(BF_ROOT . '/storage/cache');
+$settings = new Settings($db, $cache);
+$command = $argv[1] ?? 'help';
+
+$boot = function () use ($config, $db, $cache, $settings): App {
+    $base = (string) ($config['app']['url'] ?? '') ?: $settings->str('url.blog_url');
+    $path = (string) parse_url($base, PHP_URL_PATH);
+    $request = new Request('GET', '/', [], [], [], ['REMOTE_ADDR' => '127.0.0.1'], []);
+    $session = new Session('bf_cli', $path, false, '');
+    $app = new App($config, $db, $cache, $settings, $session, new Auth($db, $session, $settings), new View(BF_ROOT . '/app/Views'), new Url($base, $path), $request);
+    App::set($app);
+    return $app;
+};
+
+switch ($command) {
+    case 'migrate':
+        $done = (new Migrator($db, BF_ROOT . '/database/migrations'))->migrate();
+        $cache->flush();
+        echo $done ? 'Applied: ' . implode(', ', $done) . "\n" : "Database is up to date.\n";
+        break;
+    case 'reset-password':
+        $email = strtolower(trim((string) ($argv[2] ?? '')));
+        $user = $db->one('SELECT id, name FROM {{users}} WHERE email = ?', [$email]) ?? exit("No user with that email.\n");
+        echo 'New password for ' . $user['name'] . ': ';
+        system('stty -echo 2>/dev/null');
+        $pass = trim((string) fgets(STDIN));
+        system('stty echo 2>/dev/null');
+        echo "\n";
+        $problems = Validator::passwordProblems($pass, max(8, $settings->int('security.min_password_length')));
+        if ($problems) {
+            exit(implode(' ', $problems) . "\n");
+        }
+        $db->query('UPDATE {{users}} SET password_hash = ?, session_version = session_version + 1, status = \'active\', updated_at = ? WHERE id = ?', [password_hash($pass, PASSWORD_DEFAULT), gmdate('Y-m-d H:i:s'), $user['id']]);
+        $db->delete('login_attempts', '1 = 1');
+        echo "Password updated and login lockouts cleared.\n";
+        break;
+    case 'set-url':
+        $url = rtrim((string) ($argv[2] ?? ''), '/');
+        if (!Validator::isHttpUrl($url)) {
+            exit("Usage: php bin/blogflow set-url https://example.com/blogs\n");
+        }
+        $settings->set('url.blog_url', $url);
+        $cache->flush();
+        PageCache::clear();
+        echo "Blog URL set to $url\n";
+        break;
+    case 'disable-host-redirect':
+        $settings->set('url.force_canonical_host', false);
+        $cache->flush();
+        PageCache::clear();
+        echo "Canonical host/HTTPS redirect disabled.\n";
+        break;
+    case 'clear-cache':
+        $n = $cache->flush();
+        PageCache::clear();
+        echo "Cleared $n cached files.\n";
+        break;
+    case 'publish-scheduled':
+        @unlink(BF_ROOT . '/storage/cache/next-publish.txt');
+        echo Scheduler::tick($db) . " post(s) published.\n";
+        break;
+    case 'audit':
+        $counts = $boot()->service(SeoAuditService::class)->run();
+        echo json_encode($counts) . "\n";
+        break;
+    default:
+        echo "Commands: migrate, reset-password <email>, set-url <url>, disable-host-redirect, clear-cache, publish-scheduled, audit\n";
+}

@@ -1,0 +1,34 @@
+{
+  "name": "blogflow-cms-build",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Build tooling for BlogFlow CMS assets. Not required on the production server.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:css": "node scripts/build.mjs css",
+    "build:js": "node scripts/build.mjs js",
+    "watch": "node scripts/build.mjs watch"
+  },
+  "devDependencies": {
+    "@fontsource-variable/dm-sans": "^5.3.0",
+    "@fontsource-variable/fraunces": "^5.3.0",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/lora": "^5.3.0",
+    "@fontsource-variable/manrope": "^5.3.0",
+    "@fontsource-variable/merriweather": "^5.3.0",
+    "@fontsource-variable/playfair-display": "^5.3.0",
+    "@fontsource-variable/source-serif-4": "^5.3.1",
+    "@tiptap/core": "^3.32.0",
+    "@tiptap/extension-highlight": "^3.32.0",
+    "@tiptap/extension-table": "^3.32.0",
+    "@tiptap/extension-text-align": "^3.32.0",
+    "@tiptap/extension-youtube": "^3.32.0",
+    "@tiptap/extensions": "^3.32.0",
+    "@tiptap/pm": "^3.32.0",
+    "@tiptap/starter-kit": "^3.32.0",
+    "esbuild": "^0.25.12",
+    "playwright": "^1.64.1",
+    "sortablejs": "^1.15.7",
+    "tailwindcss": "3.4"
+  }
+}
