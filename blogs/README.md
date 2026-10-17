@@ -76,6 +76,25 @@ Posts can be exported as JSON (full content and SEO fields) or CSV (summary) and
 BlogFlow JSON (as drafts by default). Images are not embedded in post exports — copy `uploads/` or use
 the media ZIP.
 
+### Sample content (seed data)
+
+`database/seed.sql` adds fictional demo content to a fresh install so you can preview the theme:
+3 categories (one nested), 10 tags, 2 author profiles and 8 travel/taxi posts (6 published, 1 draft,
+1 scheduled a week ahead) with tags, FAQ and related posts. It adds no users, passwords, settings or
+images, and leaves existing rows alone, so running it twice is harmless.
+
+1. Install BlogFlow first (the installer creates the tables).
+2. If your table prefix is not `bf_`, replace it (or find-and-replace `` `bf_ `` in a text editor):
+   ```
+   sed 's/`bf_/`yourprefix_/g' seed.sql > seed-mine.sql
+   ```
+3. Import it: phpMyAdmin → your database → *Import*, or `mysql -u USER -p DATABASE < seed.sql`.
+4. In the admin: **Settings → Backup & restore → Maintenance → Clear caches** so the pages show the new
+   posts immediately.
+
+Delete the sample posts, categories, tags and authors from the admin when you no longer need them.
+Regenerate the file after editing the content with `php scripts/make-seed.php` (repository only).
+
 ## Command line (optional)
 
 ```

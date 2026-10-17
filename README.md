@@ -18,11 +18,12 @@ blogs/                deployable application (PHP 8.2+, MySQL/MariaDB) — uploa
   app/                Core (kernel, router, DB, auth, sessions, views), Controllers, Models,
                       Services (SEO, schema, media, sanitiser, redirects, menus, backup…), Views
   assets/             compiled CSS/JS and self-hosted fonts (built from src/)
-  database/           migrations (applied automatically) + reference schema.sql
+  database/           migrations (applied automatically), reference schema.sql, sample seed.sql
   vendor/             production PHP dependencies (HTML Purifier, PHPMailer)
 src/                  asset sources: Tailwind CSS, admin JS, Tiptap editor, public JS
 scripts/build.mjs     asset build (Tailwind + esbuild + font copy)
 scripts/package.sh    builds dist/blogflow-cms-<version>.zip
+scripts/make-seed.php regenerates blogs/database/seed.sql (sample content)
 tests/unit/run.php    dependency-free PHP unit tests
 tests/e2e/            Playwright end-to-end workflows + fresh-site reset script
 docs/                 Nginx snippet, screenshots
